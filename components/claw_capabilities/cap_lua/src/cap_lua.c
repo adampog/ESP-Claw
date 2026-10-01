@@ -1241,6 +1241,7 @@ const claw_core_context_provider_t cap_lua_async_jobs_provider = {
     .name = "Lua Async Jobs",
     .collect = cap_lua_async_jobs_collect,
     .user_ctx = NULL,
+    .per_request = true,
 };
 
 /* Case-insensitive substring search (the LLM's casing is not stable). */

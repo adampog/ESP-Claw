@@ -825,12 +825,15 @@ static esp_err_t append_prompt_section(char **prompt,
     char *grown = NULL;
     size_t current_len;
     size_t extra_len;
+    bool first_section;
 
-    if (!prompt || !*prompt || !section_name || !content || !content[0]) {
+    /* A NULL *prompt starts a new text whose first section has no leading blank line. */
+    if (!prompt || !section_name || !content || !content[0]) {
         return ESP_ERR_INVALID_ARG;
     }
 
-    current_len = strlen(*prompt);
+    first_section = (*prompt == NULL);
+    current_len = first_section ? 0 : strlen(*prompt);
     extra_len = strlen("\n\n## \n") + strlen(section_name) + strlen(content);
     grown = realloc(*prompt, current_len + extra_len + 1);
     if (!grown) {
@@ -840,7 +843,8 @@ static esp_err_t append_prompt_section(char **prompt,
     *prompt = grown;
     snprintf((*prompt) + current_len,
              extra_len + 1,
-             "\n\n## %s\n%s",
+             "%s## %s\n%s",
+             first_section ? "" : "\n\n",
              section_name,
              content);
     return ESP_OK;
@@ -901,6 +905,22 @@ static esp_err_t append_assistant_tool_calls(cJSON *messages,
     }
 
     cJSON_AddItemToObject(assistant, "tool_calls", tool_calls);
+
+    /*
+     * Keep the backend-native copy of this assistant turn (for Anthropic: the
+     * raw content blocks, including thinking blocks and their signatures) so
+     * the backend can replay it unchanged on the next call of this tool loop.
+     */
+    if (response->provider_content) {
+        cJSON *provider_content = cJSON_Duplicate(response->provider_content, true);
+
+        if (!provider_content) {
+            cJSON_Delete(assistant);
+            return ESP_ERR_NO_MEM;
+        }
+        cJSON_AddItemToObject(assistant, CLAW_LLM_PROVIDER_CONTENT_KEY, provider_content);
+    }
+
     cJSON_AddItemToArray(messages, assistant);
     return ESP_OK;
 }
@@ -994,6 +1014,8 @@ static esp_err_t append_tool_results_message(cJSON *runtime_messages,
 
 static esp_err_t build_iteration_context(const claw_core_request_item_t *request,
                                          const cJSON *runtime_messages,
+                                         bool first_iteration,
+                                         char **io_turn_context,
                                          char **out_system_prompt,
                                          cJSON **out_messages,
                                          char **out_tools_json,
@@ -1007,7 +1029,7 @@ static esp_err_t build_iteration_context(const claw_core_request_item_t *request
     size_t i;
     esp_err_t err = ESP_OK;
 
-    if (!request || !out_system_prompt || !out_messages || !out_tools_json) {
+    if (!request || !io_turn_context || !out_system_prompt || !out_messages || !out_tools_json) {
         return ESP_ERR_INVALID_ARG;
     }
 
@@ -1062,7 +1084,12 @@ static esp_err_t build_iteration_context(const claw_core_request_item_t *request
 
         switch (context.kind) {
         case CLAW_CORE_CONTEXT_KIND_SYSTEM_PROMPT:
-            err = append_prompt_section(&system_prompt, provider->name, context.content);
+            if (!provider->per_request) {
+                err = append_prompt_section(&system_prompt, provider->name, context.content);
+            } else if (first_iteration) {
+                err = append_prompt_section(io_turn_context, provider->name, context.content);
+            }
+            /* Later iterations keep the turn context rendered at the start of the request. */
             break;
         case CLAW_CORE_CONTEXT_KIND_MESSAGES:
             err = append_message_array_json(messages, context.content);
@@ -1080,16 +1107,23 @@ static esp_err_t build_iteration_context(const claw_core_request_item_t *request
         }
     }
 
-    turn_prompt = build_current_turn_prompt(&request->view);
-    if (!turn_prompt) {
-        err = ESP_ERR_NO_MEM;
-        goto cleanup;
-    }
-    err = append_prompt_section(&system_prompt, "Core Request", turn_prompt);
-    free(turn_prompt);
-    turn_prompt = NULL;
-    if (err != ESP_OK) {
-        goto cleanup;
+    /*
+     * Per-request content (request ids, clock, ...) goes to the turn context,
+     * built once per request, so the system prompt and the conversation prefix
+     * stay identical for every model call of the tool loop.
+     */
+    if (first_iteration) {
+        turn_prompt = build_current_turn_prompt(&request->view);
+        if (!turn_prompt) {
+            err = ESP_ERR_NO_MEM;
+            goto cleanup;
+        }
+        err = append_prompt_section(io_turn_context, "Core Request", turn_prompt);
+        free(turn_prompt);
+        turn_prompt = NULL;
+        if (err != ESP_OK) {
+            goto cleanup;
+        }
     }
 
     err = append_user_message(messages, request->view.user_text);
@@ -1138,6 +1172,7 @@ static void claw_core_task(void *arg)
         cJSON *runtime_messages = NULL;
         cJSON *messages = NULL;
         char *system_prompt = NULL;
+        char *turn_context = NULL;
         char *tools_json = NULL;
         char tool_summary[CLAW_CORE_TOOL_SUMMARY_MAX_LEN] = {0};
         claw_core_llm_response_t llm_response = {0};
@@ -1196,6 +1231,8 @@ static void claw_core_task(void *arg)
 
             err = build_iteration_context(&request,
                                           runtime_messages,
+                                          iteration == 0,
+                                          &turn_context,
                                           &system_prompt,
                                           &messages,
                                           &tools_json,
@@ -1207,6 +1244,7 @@ static void claw_core_task(void *arg)
             }
 
             err = claw_core_llm_chat_messages(system_prompt,
+                                              turn_context,
                                               messages,
                                               tools_json,
                                               &llm_response,
@@ -1318,6 +1356,7 @@ finish_request:
         cJSON_Delete(runtime_messages);
         cJSON_Delete(messages);
         free(system_prompt);
+        free(turn_context);
         free(tools_json);
         free_request_item(&request);
     }
@@ -1410,6 +1449,7 @@ esp_err_t claw_core_init(const claw_core_config_t *config)
     llm_config.auth_type = config->auth_type;
     llm_config.timeout_ms = config->timeout_ms;
     llm_config.image_max_bytes = config->image_max_bytes;
+    llm_config.effort = config->effort;
     err = claw_core_llm_init(&llm_config, &llm_error);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "LLM init failed: %s", llm_error ? llm_error : esp_err_to_name(err));
@@ -1475,6 +1515,7 @@ esp_err_t claw_core_add_context_provider(const claw_core_context_provider_t *pro
     }
     slot->collect = provider->collect;
     slot->user_ctx = provider->user_ctx;
+    slot->per_request = provider->per_request;
     s_core->context_provider_count++;
     return ESP_OK;
 }

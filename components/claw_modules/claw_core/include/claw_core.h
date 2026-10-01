@@ -76,6 +76,15 @@ typedef struct {
     const char *name;
     claw_core_context_provider_collect_fn collect;
     void *user_ctx;
+    /*
+     * Set for CLAW_CORE_CONTEXT_KIND_SYSTEM_PROMPT providers whose content
+     * changes from one request to the next (wall clock, live job status, ...).
+     * Such content is rendered once at the start of each request into the
+     * per-request "turn context" instead of the system prompt, so the system
+     * prompt stays byte-stable for prompt caching and stays unchanged across
+     * the tool-call loop of a request.
+     */
+    bool per_request;
 } claw_core_context_provider_t;
 
 typedef esp_err_t (*claw_core_call_cap_fn)(const char *cap_name,
@@ -94,6 +103,9 @@ typedef struct {
     const char *auth_type;
     uint32_t timeout_ms;
     size_t image_max_bytes;
+    /* Optional reasoning effort (low|medium|high|xhigh|max). NULL or "" keeps
+     * the model default. Currently used by the Anthropic backend. */
+    const char *effort;
     const char *system_prompt;
     claw_core_append_session_turn_fn append_session_turn;
     void *append_session_turn_user_ctx;

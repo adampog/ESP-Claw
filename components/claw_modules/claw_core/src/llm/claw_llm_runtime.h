@@ -26,6 +26,8 @@ typedef struct {
                              char **out_text,
                              char **out_error_message);
     void (*deinit)(void *backend_ctx);
+    /* True if chat() handles claw_llm_chat_request_t.turn_context itself. */
+    bool supports_turn_context;
 } claw_llm_backend_vtable_t;
 
 typedef struct {

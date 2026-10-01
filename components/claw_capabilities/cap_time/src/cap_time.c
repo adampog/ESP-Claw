@@ -436,4 +436,5 @@ const claw_core_context_provider_t cap_time_context_provider = {
     .name = "Time Context",
     .collect = cap_time_context_collect,
     .user_ctx = NULL,
+    .per_request = true,
 };

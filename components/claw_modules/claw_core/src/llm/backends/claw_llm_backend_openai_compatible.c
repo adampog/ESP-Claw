@@ -227,6 +227,8 @@ static esp_err_t build_chat_body(const openai_compatible_backend_ctx_t *ctx,
             cJSON_Delete(messages);
             return ESP_ERR_NO_MEM;
         }
+        /* Backend-native copies from other backends are not part of this wire format. */
+        cJSON_DeleteItemFromObject(dup, CLAW_LLM_PROVIDER_CONTENT_KEY);
         cJSON_AddItemToArray(messages, dup);
     }
 

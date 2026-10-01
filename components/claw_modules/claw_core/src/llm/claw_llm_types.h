@@ -61,7 +61,19 @@ typedef struct {
     const char *auth_type;
     uint32_t timeout_ms;
     size_t image_max_bytes;
+    /* Optional reasoning effort: low|medium|high|xhigh|max. NULL/"" = model default. */
+    const char *effort;
 } claw_llm_runtime_config_t;
+
+/*
+ * Key under which an assistant message in the (OpenAI-shaped) conversation
+ * history carries the backend-native copy of that assistant turn. Backends
+ * that set claw_llm_response_t.provider_content get it back here on the next
+ * request of the same tool loop and can replay it verbatim (for Anthropic:
+ * the raw content array, including thinking blocks and their signatures).
+ * Backends that do not understand it must ignore it.
+ */
+#define CLAW_LLM_PROVIDER_CONTENT_KEY "provider_content"
 
 typedef struct {
     char *id;
@@ -74,12 +86,22 @@ typedef struct {
     char *reasoning_content;
     claw_llm_tool_call_t *tool_calls;
     size_t tool_call_count;
+    /* Optional, owned. See CLAW_LLM_PROVIDER_CONTENT_KEY. */
+    cJSON *provider_content;
 } claw_llm_response_t;
 
 typedef struct {
     const char *system_prompt;
     cJSON *messages;
     const char *tools_json;
+    /*
+     * Optional per-request context (clock, live job status, request ids).
+     * It is rendered once per request and stays identical for every model
+     * call of that request. Backends with supports_turn_context place it in
+     * the conversation so that system_prompt stays cacheable; for all other
+     * backends the runtime appends it to system_prompt ("\n\n" separated).
+     */
+    const char *turn_context;
 } claw_llm_chat_request_t;
 
 typedef struct {

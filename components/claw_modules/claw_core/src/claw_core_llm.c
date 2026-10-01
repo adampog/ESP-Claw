@@ -62,10 +62,12 @@ esp_err_t claw_core_llm_init(const claw_core_llm_config_t *config, char **out_er
     runtime_config.auth_type = config->auth_type;
     runtime_config.timeout_ms = config->timeout_ms;
     runtime_config.image_max_bytes = config->image_max_bytes;
+    runtime_config.effort = config->effort;
     return claw_llm_runtime_init(&s_runtime, &runtime_config, out_error_message);
 }
 
 esp_err_t claw_core_llm_chat_messages(const char *system_prompt,
+                                      const char *turn_context,
                                       cJSON *messages,
                                       const char *tools_json,
                                       claw_core_llm_response_t *out_response,
@@ -86,6 +88,7 @@ esp_err_t claw_core_llm_chat_messages(const char *system_prompt,
     request.system_prompt = system_prompt;
     request.messages = messages;
     request.tools_json = tools_json;
+    request.turn_context = turn_context;
     return claw_llm_runtime_chat(s_runtime, &request, out_response, out_error_message);
 }
 
@@ -119,7 +122,7 @@ esp_err_t claw_core_llm_chat(const char *system_prompt,
     cJSON_AddStringToObject(user_msg, "content", user_text);
     cJSON_AddItemToArray(messages, user_msg);
 
-    err = claw_core_llm_chat_messages(system_prompt, messages, NULL, &response, out_error_message);
+    err = claw_core_llm_chat_messages(system_prompt, NULL, messages, NULL, &response, out_error_message);
     cJSON_Delete(messages);
     if (err != ESP_OK) {
         claw_core_llm_response_free(&response);

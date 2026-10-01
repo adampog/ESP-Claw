@@ -5,6 +5,7 @@
  */
 #include "llm/claw_llm_runtime.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -152,6 +153,7 @@ static void runtime_config_free(claw_llm_runtime_config_t *config)
     free((char *)config->model);
     free((char *)config->base_url);
     free((char *)config->auth_type);
+    free((char *)config->effort);
     memset(config, 0, sizeof(*config));
 }
 
@@ -164,6 +166,7 @@ static esp_err_t runtime_config_copy(claw_llm_runtime_config_t *dst,
     dst->model = dup_or_null(src->model);
     dst->base_url = dup_or_null(src->base_url);
     dst->auth_type = dup_or_null(src->auth_type);
+    dst->effort = dup_or_null(src->effort);
     dst->timeout_ms = src->timeout_ms;
     dst->image_max_bytes = src->image_max_bytes;
 
@@ -172,7 +175,8 @@ static esp_err_t runtime_config_copy(claw_llm_runtime_config_t *dst,
             (src->profile && !dst->profile) ||
             (src->model && !dst->model) ||
             (src->base_url && !dst->base_url) ||
-            (src->auth_type && !dst->auth_type)) {
+            (src->auth_type && !dst->auth_type) ||
+            (src->effort && !dst->effort)) {
         runtime_config_free(dst);
         return ESP_ERR_NO_MEM;
     }
@@ -271,15 +275,52 @@ esp_err_t claw_llm_runtime_chat(claw_llm_runtime_t *runtime,
                                 claw_llm_response_t *out_response,
                                 char **out_error_message)
 {
+    claw_llm_chat_request_t merged = {0};
+    char *merged_system_prompt = NULL;
+    size_t system_len;
+    size_t context_len;
+    esp_err_t err;
+
     if (!runtime || !runtime->backend || !runtime->backend->chat) {
         return ESP_ERR_INVALID_STATE;
     }
 
-    return runtime->backend->chat(runtime->backend_ctx,
-                                  runtime->profile,
-                                  request,
-                                  out_response,
-                                  out_error_message);
+    if (!request || !request->turn_context || !request->turn_context[0] ||
+            runtime->backend->supports_turn_context) {
+        return runtime->backend->chat(runtime->backend_ctx,
+                                      runtime->profile,
+                                      request,
+                                      out_response,
+                                      out_error_message);
+    }
+
+    /* Backends without turn-context support get it as trailing system prompt text. */
+    system_len = request->system_prompt ? strlen(request->system_prompt) : 0;
+    context_len = strlen(request->turn_context);
+    merged_system_prompt = calloc(1, system_len + context_len + 3);
+    if (!merged_system_prompt) {
+        if (out_error_message) {
+            *out_error_message = strdup("Out of memory merging turn context");
+        }
+        return ESP_ERR_NO_MEM;
+    }
+    snprintf(merged_system_prompt,
+             system_len + context_len + 3,
+             "%s%s%s",
+             system_len ? request->system_prompt : "",
+             system_len ? "\n\n" : "",
+             request->turn_context);
+
+    merged = *request;
+    merged.system_prompt = merged_system_prompt;
+    merged.turn_context = NULL;
+    err = runtime->backend->chat(runtime->backend_ctx,
+                                 runtime->profile,
+                                 &merged,
+                                 out_response,
+                                 out_error_message);
+    free(merged_system_prompt);
+    return err;
 }
 
 esp_err_t claw_llm_runtime_infer_media(claw_llm_runtime_t *runtime,
@@ -327,5 +368,6 @@ void claw_llm_response_free(claw_llm_response_t *response)
         free(response->tool_calls[i].arguments_json);
     }
     free(response->tool_calls);
+    cJSON_Delete(response->provider_content);
     memset(response, 0, sizeof(*response));
 }

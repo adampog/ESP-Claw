@@ -17,6 +17,7 @@ typedef struct {
     const char *auth_type;
     uint32_t timeout_ms;
     size_t image_max_bytes;
+    const char *effort;
 } claw_core_llm_config_t;
 
 typedef claw_llm_tool_call_t claw_core_llm_tool_call_t;
@@ -24,6 +25,7 @@ typedef claw_llm_response_t claw_core_llm_response_t;
 
 esp_err_t claw_core_llm_init(const claw_core_llm_config_t *config, char **out_error_message);
 esp_err_t claw_core_llm_chat_messages(const char *system_prompt,
+                                      const char *turn_context,
                                       cJSON *messages,
                                       const char *tools_json,
                                       claw_core_llm_response_t *out_response,

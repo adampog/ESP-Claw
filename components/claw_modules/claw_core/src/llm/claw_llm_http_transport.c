@@ -294,6 +294,7 @@ esp_err_t claw_llm_http_post_json(const claw_llm_http_json_request_t *request,
     ESP_LOGD(TAG, "HTTP status=%d", status_code);
     if (status_code != 200) {
         err = ESP_FAIL;
+        out_response->status_code = status_code;
         *out_error_message = parse_error_message_body(buffer.data, status_code);
         ESP_LOGE(TAG, "LLM error: %s", *out_error_message ? *out_error_message : "(null)");
         goto cleanup;
