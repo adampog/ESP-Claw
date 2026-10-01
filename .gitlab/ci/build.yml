@@ -98,6 +98,9 @@ build_application_edge_agent:
         EXAMPLE_BOARD: esp32_S3_DevKitC_1_breadboard
         EXAMPLE_TARGET: esp32s3
       - IMAGE: espressif/idf:release-v5.5
+        EXAMPLE_BOARD: esp32_S3_DevKitC_1_N16R8
+        EXAMPLE_TARGET: esp32s3
+      - IMAGE: espressif/idf:release-v5.5
         EXAMPLE_BOARD: esp32_p4_function_ev
         EXAMPLE_TARGET: esp32p4
       - IMAGE: espressif/idf:release-v5.5
