@@ -51,6 +51,7 @@ Fields:
   - Runtime endpoint is `base_url` + `api_path`.
 - **`llm_model`: model name**
   - Must match the provider’s model id.
+  - For Anthropic the default is `claude-opus-5-5`; `claude-sonnet-5-5` and `claude-haiku-4-5` are lower-cost options.
 - **`llm_api_key`: LLM API key**
 - **`llm_auth_type`: auth header style** [optional]
   - Extra hint such as `bearer`, `api-key`, `none`, …
@@ -58,6 +59,10 @@ Fields:
   - With `anthropic`, `llm_auth_type` is ignored; the key goes in `x-api-key: <API Key>`.
 - **`llm_timeout_ms`: request timeout**
   - Timeout in milliseconds (stored as string).
+- **`llm_effort`: reasoning effort** [optional]
+  - `low`, `medium`, `high`, `xhigh` or `max`; sent as `output_config.effort` by the `anthropic` backend.
+  - Empty keeps the model default (`medium` on `claude-opus-5-5`, `high` on `claude-sonnet-5-5`). Lower effort is faster and cheaper; higher effort thinks longer, so raise `llm_timeout_ms` with it.
+  - Ignored by other backends and by models without effort support (such as `claude-haiku-4-5`).
 
 ### IM and platforms
 

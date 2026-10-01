@@ -164,7 +164,7 @@ ESP-Claw 目前已适配基于 ESP32-S3 的多款开发版，例如面包板、M
 
 > ![TIP]
 >
-> ESP-Claw 的自编程能力需要调用工具和遵循指令能力较强的模型，推荐使用 `gpt-5.4`、`qwen3.6-plus`、`claude4.6-sonnet`、`deepseek-v4-pro` 或类似性能的模型。
+> ESP-Claw 的自编程能力需要调用工具和遵循指令能力较强的模型，推荐使用 `gpt-5.4`、`qwen3.6-plus`、`claude-opus-5-5`（如需更低成本可选 `claude-sonnet-5-5` / `claude-haiku-4-5`）、`deepseek-v4-pro` 或类似性能的模型。
 
 **IM**: ESP-Claw 支持 Telegram、QQ、飞书、微信四大聊天软件，并可扩展。
 

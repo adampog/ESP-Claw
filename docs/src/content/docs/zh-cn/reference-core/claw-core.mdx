@@ -62,6 +62,8 @@ Event Router 的 `run_agent` 动作会同时设置这两个标志，实现异步
 
 因此：大语言模型最终接收的工具列表，不仅取决于注册了哪些 Capability，还取决于 `claw_cap_set_llm_visible_groups`。
 
+系统提示内容每次请求都会变化的 provider（第 7、8 项）设置了 `per_request = true`。它们的内容与请求 ID 一起，在每次请求开始时渲染一次，放入单独的 **turn context**，而不是系统提示。这样系统提示保持字节级稳定（便于 prompt caching），且同一次工具调用循环中的每次模型调用，其系统提示和对话前缀都保持一致。`anthropic` backend 将 turn context 作为当前用户消息的第一个文本块发送；其他 backend 仍将其追加到系统提示末尾。
+
 <Aside type="tip">
     `edge_agent` 默认只对大语言模型暴露 `cap_files`、`cap_skill`、`cap_system`、`cap_lua`（完整结构化记忆模式还包含 `claw_memory`）。其余能力通常需要先激活对应 Skill，模型才能同时获得「工具可见性 + 使用说明」——详见 [claw_cap](./claw-cap) 与 [cap_skill](@lang/reference-cap/cap-skill)
 </Aside>

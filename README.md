@@ -164,7 +164,7 @@ You can find practical examples in our [documentation](https://esp-claw.com/en/t
 
 > [!TIP]
 >
-> ESP-Claw's self-programming capability depends on models with strong tool use and instruction-following ability. We recommend `gpt-5.4`, `qwen3.6-plus`, `claude4.6-sonnet`, `deepseek-v4-pro` or models with comparable capability.
+> ESP-Claw's self-programming capability depends on models with strong tool use and instruction-following ability. We recommend `gpt-5.4`, `qwen3.6-plus`, `claude-opus-5-5` (or `claude-sonnet-5-5` / `claude-haiku-4-5` for lower cost), `deepseek-v4-pro` or models with comparable capability.
 
 **IM**: ESP-Claw supports Telegram, QQ, Feishu, and WeChat, and can be extended further.
 

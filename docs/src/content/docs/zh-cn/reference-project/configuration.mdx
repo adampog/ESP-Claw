@@ -51,6 +51,7 @@ ESP-Claw `edge_agent` 使用 menuconfig (sdkconfig) 保存初始化默认配置�
   - 运行时请求的 Endpoint URL 为 `base_url` + `api_path`。
 - **`llm_model`：模型名**
   - 须与所选供应商的模型名一致。
+  - Anthropic 默认使用 `claude-opus-5-5`；`claude-sonnet-5-5` 和 `claude-haiku-4-5` 成本更低。
 - **`llm_api_key`：大模型 API Key**
 - **`llm_auth_type`：鉴权头类别**[可选]
   - 补充字段，例如 `bearer`、`api-key`、`none` 等。
@@ -58,6 +59,10 @@ ESP-Claw `edge_agent` 使用 menuconfig (sdkconfig) 保存初始化默认配置�
   - 使用 `anthropic` backend 时，`llm_auth_type` 选项会被忽略。API Key 会通过 `x-api-key: <API Key>` 请求头传递。
 - **`llm_timeout_ms`：请求超时**
   - 请求超时时间（毫秒，字符串形式存储）。
+- **`llm_effort`：推理强度**[可选]
+  - 可选 `low`、`medium`、`high`、`xhigh`、`max`；由 `anthropic` backend 以 `output_config.effort` 发送。
+  - 留空使用模型默认值（`claude-opus-5-5` 为 `medium`，`claude-sonnet-5-5` 为 `high`）。强度越低越快、越省；强度越高思考越久，请相应调大 `llm_timeout_ms`。
+  - 其他 backend 以及不支持 effort 的模型（如 `claude-haiku-4-5`）会忽略此项。
 
 ### IM 与开放平台
 

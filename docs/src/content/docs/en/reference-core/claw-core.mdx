@@ -62,6 +62,8 @@ When assembling the **current-turn user prompt** sent to the LLM, `claw_core` al
 
 So the final tool list depends both on registered capabilities and on `claw_cap_set_llm_visible_groups`.
 
+Providers whose system-prompt content changes on every request (items 7 and 8) set `per_request = true`. Their content, together with the request ids, is rendered once at the start of each request into a separate **turn context** instead of the system prompt. The system prompt therefore stays byte-stable (prompt caching), and the system prompt and conversation prefix stay identical for every model call of a tool loop. The `anthropic` backend sends the turn context as the first text block of the current user message; other backends receive it appended to the system prompt as before.
+
 <Aside type="tip">
     `edge_agent` exposes `cap_files`, `cap_skill`, `cap_system`, and `cap_lua` to the LLM by default (full structured-memory mode also includes `claw_memory`). Other capabilities typically require activating the corresponding Skill first, so the model gets both "tool visibility + usage guidance" together. See [claw_cap](./claw-cap) and [cap_skill](@lang/reference-cap/cap-skill)
 </Aside>

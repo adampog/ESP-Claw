@@ -59,6 +59,8 @@ idf.py gen-bmgr-config -c ./boards -b esp32_S3_DevKitC_1
 ```
 
 > `idf.py gen-bmgr-config -c ./boards -b <board_name>` generates the configuration for the specified board. Available board names can be found in the `boards` directory.
+>
+> For an ESP32-S3-DevKitC-1 built on the ESP32-S3-WROOM-1 N16R8 module (16 MB flash, 8 MB octal PSRAM), use `-b esp32_S3_DevKitC_1_N16R8` to get the 16 MB partition table.
 
 2. Configure Wi-Fi, LLM, IM, search engine, and related parameters:
 
