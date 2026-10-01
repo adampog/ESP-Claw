@@ -198,6 +198,7 @@ static esp_err_t settings_to_json(httpd_req_t *req)
     json_add_string(root, "llm_base_url", settings.llm_base_url);
     json_add_string(root, "llm_auth_type", settings.llm_auth_type);
     json_add_string(root, "llm_timeout_ms", settings.llm_timeout_ms);
+    json_add_string(root, "llm_effort", settings.llm_effort);
     json_add_string(root, "qq_app_id", settings.qq_app_id);
     json_add_string(root, "qq_app_secret", settings.qq_app_secret);
     json_add_string(root, "feishu_app_id", settings.feishu_app_id);
@@ -343,6 +344,7 @@ static esp_err_t config_post_handler(httpd_req_t *req)
     json_read_string(root, "llm_base_url", settings.llm_base_url, sizeof(settings.llm_base_url));
     json_read_string(root, "llm_auth_type", settings.llm_auth_type, sizeof(settings.llm_auth_type));
     json_read_string(root, "llm_timeout_ms", settings.llm_timeout_ms, sizeof(settings.llm_timeout_ms));
+    json_read_string(root, "llm_effort", settings.llm_effort, sizeof(settings.llm_effort));
     json_read_string(root, "qq_app_id", settings.qq_app_id, sizeof(settings.qq_app_id));
     json_read_string(root, "qq_app_secret", settings.qq_app_secret, sizeof(settings.qq_app_secret));
     json_read_string(root, "feishu_app_id", settings.feishu_app_id, sizeof(settings.feishu_app_id));

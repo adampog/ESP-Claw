@@ -252,6 +252,7 @@ esp_err_t app_claw_start(const app_claw_config_t *config,
     core_config.base_url = config->llm_base_url;
     core_config.auth_type = config->llm_auth_type;
     core_config.timeout_ms = (uint32_t)strtoul(config->llm_timeout_ms, NULL, 10);
+    core_config.effort = config->llm_effort[0] ? config->llm_effort : NULL;
     core_config.system_prompt = APP_SYSTEM_PROMPT;
 #if CONFIG_APP_CLAW_MEMORY_MODE_FULL
     core_config.append_session_turn = claw_memory_append_session_turn_callback;

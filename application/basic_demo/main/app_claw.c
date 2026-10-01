@@ -372,6 +372,7 @@ esp_err_t app_claw_start(const basic_demo_settings_t *settings)
     core_config.base_url = settings->llm_base_url;
     core_config.auth_type = settings->llm_auth_type;
     core_config.timeout_ms = (uint32_t)strtoul(settings->llm_timeout_ms, NULL, 10);
+    core_config.effort = settings->llm_effort[0] ? settings->llm_effort : NULL;
     core_config.system_prompt = BASIC_DEMO_SYSTEM_PROMPT;
 #if CONFIG_BASIC_DEMO_MEMORY_MODE_FULL
     core_config.append_session_turn = claw_memory_append_session_turn_callback;

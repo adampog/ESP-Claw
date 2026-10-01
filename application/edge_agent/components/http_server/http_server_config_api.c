@@ -16,6 +16,7 @@ static void http_server_config_to_json(cJSON *root, const app_config_t *config)
     http_server_json_add_string(root, "llm_base_url", config->llm_base_url);
     http_server_json_add_string(root, "llm_auth_type", config->llm_auth_type);
     http_server_json_add_string(root, "llm_timeout_ms", config->llm_timeout_ms);
+    http_server_json_add_string(root, "llm_effort", config->llm_effort);
     http_server_json_add_string(root, "qq_app_id", config->qq_app_id);
     http_server_json_add_string(root, "qq_app_secret", config->qq_app_secret);
     http_server_json_add_string(root, "feishu_app_id", config->feishu_app_id);
@@ -44,6 +45,7 @@ static void http_server_config_from_json(app_config_t *config, cJSON *root)
     http_server_json_read_string(root, "llm_base_url", config->llm_base_url, sizeof(config->llm_base_url));
     http_server_json_read_string(root, "llm_auth_type", config->llm_auth_type, sizeof(config->llm_auth_type));
     http_server_json_read_string(root, "llm_timeout_ms", config->llm_timeout_ms, sizeof(config->llm_timeout_ms));
+    http_server_json_read_string(root, "llm_effort", config->llm_effort, sizeof(config->llm_effort));
     http_server_json_read_string(root, "qq_app_id", config->qq_app_id, sizeof(config->qq_app_id));
     http_server_json_read_string(root, "qq_app_secret", config->qq_app_secret, sizeof(config->qq_app_secret));
     http_server_json_read_string(root, "feishu_app_id", config->feishu_app_id, sizeof(config->feishu_app_id));

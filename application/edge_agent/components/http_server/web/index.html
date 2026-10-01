@@ -141,11 +141,23 @@
                 </div>
                 <div class="form-group">
                   <label for="llm_model" data-i18n="llmModel">Model</label>
-                  <input type="text" id="llm_model" name="llm_model">
+                  <input type="text" id="llm_model" name="llm_model" list="llm_model_options" autocomplete="off">
+                  <datalist id="llm_model_options"></datalist>
                 </div>
                 <div class="form-group">
                   <label for="llm_timeout_ms" data-i18n="llmTimeout">Timeout (ms)</label>
                   <input type="text" id="llm_timeout_ms" name="llm_timeout_ms" data-i18n-placeholder="llmTimeoutPlaceholder">
+                </div>
+                <div class="form-group">
+                  <label for="llm_effort" data-i18n="llmEffort">Effort (Claude)</label>
+                  <select id="llm_effort" name="llm_effort">
+                    <option value="" data-i18n-option="llmEffortDefault">Model default</option>
+                    <option value="low">low</option>
+                    <option value="medium">medium</option>
+                    <option value="high">high</option>
+                    <option value="xhigh">xhigh</option>
+                    <option value="max">max</option>
+                  </select>
                 </div>
               </div>
               <details class="advanced-section" style="margin-top: 0.85rem;">

@@ -138,7 +138,7 @@ menu "Default LLM Settings"
         default "" if BASIC_DEMO_LLM_PROVIDER_OPENAI
         default "qwen3-max-2026-01-23" if BASIC_DEMO_LLM_PROVIDER_QWEN
         default "deepseek-v4-pro" if BASIC_DEMO_LLM_PROVIDER_DEEPSEEK
-        default "" if BASIC_DEMO_LLM_PROVIDER_ANTHROPIC
+        default "claude-opus-5-5" if BASIC_DEMO_LLM_PROVIDER_ANTHROPIC
         default "" if BASIC_DEMO_LLM_PROVIDER_CUSTOM
         help
             Default model name for claw_core requests.
@@ -171,6 +171,15 @@ menu "Default LLM Settings"
         default "120000"
         help
             Timeout in milliseconds for outbound LLM HTTP requests.
+
+    config BASIC_DEMO_LLM_EFFORT
+        string "Default LLM effort"
+        default ""
+        help
+            Optional reasoning effort sent as output_config.effort by the Anthropic
+            backend: low, medium, high, xhigh or max. Leave empty to use the model
+            default (medium on claude-opus-5-5, high on claude-sonnet-5-5).
+            Ignored by other backends and by models without effort support.
 
 endmenu
 

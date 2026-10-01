@@ -38,6 +38,8 @@ const strings = {
     llmModel: "Model",
     llmTimeout: "Timeout (ms)",
     llmTimeoutPlaceholder: "120000",
+    llmEffort: "Effort (Claude)",
+    llmEffortDefault: "Model default",
     llmAdvanced: "LLM Advanced Options",
     llmBackend: "Backend Type",
     llmBackendPlaceholder: "openai_compatible / anthropic / custom",
@@ -193,6 +195,8 @@ const strings = {
     llmModel: "模型",
     llmTimeout: "超时 (毫秒)",
     llmTimeoutPlaceholder: "120000",
+    llmEffort: "推理强度 (Claude)",
+    llmEffortDefault: "模型默认",
     llmAdvanced: "LLM 高级选项",
     llmBackend: "后端类型",
     llmBackendPlaceholder: "openai_compatible / anthropic / custom",
@@ -451,6 +455,7 @@ const configFields = [
   "llm_base_url",
   "llm_auth_type",
   "llm_timeout_ms",
+  "llm_effort",
   "qq_app_id",
   "qq_app_secret",
   "feishu_app_id",
@@ -503,8 +508,27 @@ const llmProviderDefaultModels = {
   openai: "gpt-5.4",
   qwen: "qwen3.6-plus",
   deepseek: "deepseek-v4-pro",
-  anthropic: "claude-sonnet-4-6",
+  anthropic: "claude-opus-5-5",
 };
+
+/* Suggestions shown in the model field; any model name can still be typed. */
+const llmProviderModelOptions = {
+  anthropic: ["claude-opus-5-5", "claude-sonnet-5-5", "claude-haiku-4-5"],
+};
+
+function updateModelOptions(presetKey) {
+  const list = document.getElementById("llm_model_options");
+  if (!list) return;
+  const options = llmProviderModelOptions[presetKey] ||
+    (llmProviderDefaultModels[presetKey] ? [llmProviderDefaultModels[presetKey]] : []);
+  list.replaceChildren(
+    ...options.map((model) => {
+      const option = document.createElement("option");
+      option.value = model;
+      return option;
+    })
+  );
+}
 
 /* ── Banner helpers ── */
 
@@ -935,7 +959,9 @@ function detectProviderPreset() {
 
 function syncProviderPreset() {
   const select = document.getElementById("llm_provider_preset");
-  if (select) select.value = detectProviderPreset();
+  const preset = detectProviderPreset();
+  if (select) select.value = preset;
+  updateModelOptions(preset);
 }
 
 function applyProviderPreset(presetKey) {

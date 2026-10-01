@@ -44,6 +44,7 @@ static void settings_load_defaults(basic_demo_settings_t *settings)
     settings_safe_copy(settings->llm_base_url, sizeof(settings->llm_base_url), BASIC_DEMO_LLM_BASE_URL);
     settings_safe_copy(settings->llm_auth_type, sizeof(settings->llm_auth_type), BASIC_DEMO_LLM_AUTH_TYPE);
     settings_safe_copy(settings->llm_timeout_ms, sizeof(settings->llm_timeout_ms), BASIC_DEMO_LLM_TIMEOUT_MS);
+    settings_safe_copy(settings->llm_effort, sizeof(settings->llm_effort), BASIC_DEMO_LLM_EFFORT);
     settings_safe_copy(settings->qq_app_id, sizeof(settings->qq_app_id), BASIC_DEMO_QQ_APP_ID);
     settings_safe_copy(settings->qq_app_secret, sizeof(settings->qq_app_secret), BASIC_DEMO_QQ_APP_SECRET);
     settings_safe_copy(settings->feishu_app_id, sizeof(settings->feishu_app_id), BASIC_DEMO_FEISHU_APP_ID);
@@ -112,6 +113,7 @@ esp_err_t basic_demo_settings_load(basic_demo_settings_t *settings)
         { "llm_base_url", settings->llm_base_url, settings->llm_base_url, sizeof(settings->llm_base_url) },
         { "llm_auth_type", settings->llm_auth_type, settings->llm_auth_type, sizeof(settings->llm_auth_type) },
         { "llm_timeout_ms", settings->llm_timeout_ms, settings->llm_timeout_ms, sizeof(settings->llm_timeout_ms) },
+        { "llm_effort", settings->llm_effort, settings->llm_effort, sizeof(settings->llm_effort) },
         { "qq_app_id", settings->qq_app_id, settings->qq_app_id, sizeof(settings->qq_app_id) },
         { "qq_app_secret", settings->qq_app_secret, settings->qq_app_secret, sizeof(settings->qq_app_secret) },
         { "feishu_app_id", settings->feishu_app_id, settings->feishu_app_id, sizeof(settings->feishu_app_id) },
@@ -176,6 +178,7 @@ esp_err_t basic_demo_settings_save(const basic_demo_settings_t *settings)
         { "llm_base_url", NULL, (char *)settings->llm_base_url, sizeof(settings->llm_base_url) },
         { "llm_auth_type", NULL, (char *)settings->llm_auth_type, sizeof(settings->llm_auth_type) },
         { "llm_timeout_ms", NULL, (char *)settings->llm_timeout_ms, sizeof(settings->llm_timeout_ms) },
+        { "llm_effort", NULL, (char *)settings->llm_effort, sizeof(settings->llm_effort) },
         { "qq_app_id", NULL, (char *)settings->qq_app_id, sizeof(settings->qq_app_id) },
         { "qq_app_secret", NULL, (char *)settings->qq_app_secret, sizeof(settings->qq_app_secret) },
         { "feishu_app_id", NULL, (char *)settings->feishu_app_id, sizeof(settings->feishu_app_id) },
